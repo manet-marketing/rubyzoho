@@ -97,7 +97,7 @@ module ZohoApi
     end
 
     def create_url(module_name, api_call)
-      "https://crm.zoho.com/crm/private/xml/#{module_name}/#{api_call}"
+      "https://crm.zoho.eu/crm/private/xml/#{module_name}/#{api_call}"
     end
 
     def delete_record(module_name, record_id)
