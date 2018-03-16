@@ -1,3 +1,5 @@
+# -*- encoding : utf-8 -*-
+#
 module ZohoApiFieldUtils
 
   @@module_fields = {}
@@ -57,6 +59,7 @@ module ZohoApiFieldUtils
     return @@module_fields[mod_name] unless @@module_fields[mod_name].nil?
     r = first(module_name)
     return nil if r.nil?
+    ::ZohoFieldMapping.instance.add(mod_name, *r.first.keys)
     @@module_fields[mod_name] = r.first.keys
     @@module_fields[mod_name]
   end

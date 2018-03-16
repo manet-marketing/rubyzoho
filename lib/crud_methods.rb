@@ -50,7 +50,7 @@ module CrudMethods
         # convert each to field values hash
         records = slice.collect do |record|
           h = {}
-          record.fields.each { |f| h.merge!({ f => eval("record.#{f.to_s}") }) }
+          record.fields.each { |f| h.merge!({ f => record.send(f) }) }
           h.delete_if { |k, v| v.nil? }
           h
         end
@@ -72,18 +72,20 @@ module CrudMethods
   end
 
   def save
-    h = {}
-    @fields.each { |f| h.merge!({ f => eval("self.#{f.to_s}") }) }
-    h.delete_if { |k, v| v.nil? }
-    r = RubyZoho.configuration.api.add_record(self.class.module_name, h)
-    up_date(r)
+    save_object(self)
   end
 
   def save_object(object)
-    h = {}
-    object.fields.each { |f| h.merge!({ f => object.send(f) }) }
-    h.delete_if { |k, v| v.nil? }
-    r = RubyZoho.configuration.api.add_record(object.module_name, h)
+    methods = ZohoFieldMapping.instance.method_names(self.class.module_name)
+    h = methods.inject({}) do |memo, m|
+      value = object.send(m)
+      if value.present?
+        memo[m] = value
+      end
+      memo
+    end
+    # h = ZohoFieldMapping.instance.translate_method_to_field_names(self.class.module_name, h, true)
+    r = RubyZoho.configuration.api.add_record(self.class.module_name, h)
     up_date(r)
   end
 

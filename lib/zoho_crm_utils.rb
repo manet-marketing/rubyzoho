@@ -8,7 +8,7 @@ module ZohoCrmUtils
 
     def create_accessor(klass, names)
       names.each do |name|
-        n = name.class == Symbol ? name.to_s : name
+        n = name.to_s
         n.gsub!(/[()]*/, '')
         raise(RuntimeError, "Bad field name: #{name}") unless method_name?(n)
         create_getter(klass, n)
@@ -47,7 +47,7 @@ module ZohoCrmUtils
 
   def create_accessor(klass, names)
     names.each do |name|
-      n = name.class == Symbol ? name.to_s : name
+      n = name.to_s.dup
       n.gsub!(/[()]*/, '')
       raise(RuntimeError, "Bad field name: #{name}") unless self.class.method_name?(n)
       self.class.create_getter(klass, n)
@@ -59,6 +59,7 @@ module ZohoCrmUtils
   def update_or_create_attrs(object_attribute_hash)
     retry_counter = object_attribute_hash.count
     begin
+      object_attribute_hash = ::ZohoFieldMapping.instance.translate_field_to_method_names(module_name, object_attribute_hash)
       object_attribute_hash.map { |(k, v)| public_send("#{k}=", v) }
     rescue NoMethodError => e
       m = e.message.slice(/`(.*?)=/)
@@ -77,5 +78,4 @@ module ZohoCrmUtils
     RubyZoho::Crm.create_accessor(klass, [method])
     nil
   end
-
 end

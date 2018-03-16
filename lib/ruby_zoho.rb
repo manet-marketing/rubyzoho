@@ -1,4 +1,5 @@
 require 'zoho_api'
+require 'zoho_field_mapping'
 require 'api_utils'
 require 'yaml'
 
@@ -24,9 +25,7 @@ module RubyZoho
   def self.configure
     self.configuration ||= Configuration.new
     yield(configuration) if block_given?
-    self.configuration.crm_modules ||= []
-    self.configuration.crm_modules = %w[Accounts Calls Contacts Events Leads Potentials Tasks].concat(
-        self.configuration.crm_modules).uniq
+    self.configuration.crm_modules ||= %w[Accounts Calls Contacts Events Leads Potentials Tasks]
     self.configuration.api = init_api(self.configuration.api_key,
                                       self.configuration.crm_modules,
                                       self.configuration.cache_fields, self.configuration.cache_path)
