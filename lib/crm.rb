@@ -17,12 +17,9 @@ class RubyZoho::Crm
         object_attribute_hash.keys
     method_names = ZohoFieldMapping.instance.method_names(self.class.module_name)
     create_accessor(self.class, method_names)
-    # create_accessor(self.class, [:module_name])
+    create_accessor(self.class, [:module_name])
     public_send(:module_name=, self.class.module_name)
-
-    translated_obj_attr_hash = ZohoFieldMapping.instance.
-        translate_field_to_method_names(self.class.module_name, object_attribute_hash)
-    update_or_create_attrs(translated_obj_attr_hash)
+    update_or_create_attrs(object_attribute_hash)
     self
   end
 

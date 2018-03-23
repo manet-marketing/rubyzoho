@@ -76,15 +76,14 @@ module CrudMethods
   end
 
   def save_object(object)
-    methods = ZohoFieldMapping.instance.method_names(self.class.module_name)
-    h = methods.inject({}) do |memo, m|
+    h = object.fields.inject({}) do |memo, m|
       value = object.send(m)
       if value.present?
         memo[m] = value
       end
       memo
     end
-    # h = ZohoFieldMapping.instance.translate_method_to_field_names(self.class.module_name, h, true)
+
     r = RubyZoho.configuration.api.add_record(self.class.module_name, h)
     up_date(r)
   end

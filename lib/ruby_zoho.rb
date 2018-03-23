@@ -6,7 +6,7 @@ require 'yaml'
 module RubyZoho
 
   class Configuration
-    attr_accessor :api, :api_key, :cache_fields, :cache_path, :crm_modules, :ignore_fields_with_bad_names
+    attr_accessor :api, :api_key, :cache_fields, :cache_path, :crm_modules, :ignore_fields_with_bad_names, :field_names
 
     def initialize
       self.api_key = nil
@@ -29,7 +29,25 @@ module RubyZoho
     self.configuration.api = init_api(self.configuration.api_key,
                                       self.configuration.crm_modules,
                                       self.configuration.cache_fields, self.configuration.cache_path)
-    RubyZoho::Crm.setup_classes()
+
+    force_field_names(self.configuration.field_names)
+    RubyZoho::Crm.setup_classes
+  end
+
+  def self.force_field_names(field_names_per_module)
+    (field_names_per_module || {}).each do |module_name, field_names|
+      field_names = if field_names.kind_of?(String) then
+                      field_names.strip.split(/\s*\n\s*/)
+                    else
+                      field_names
+                    end
+      map = ZohoApi::Crm.class_variable_get('@@module_translation_fields')
+      field_names.each do |field_name|
+        k = ZohoFieldMapping.escape_name(field_name)
+        map[module_name] ||= {}
+        map[module_name][k.to_s] = field_name.to_s
+      end
+    end
   end
 
   def self.init_api(api_key, modules, cache_fields, cache_path)

@@ -9,16 +9,18 @@ module ZohoApiFieldUtils
   def add_field(row, field, value, module_name)
     r = (REXML::Element.new 'FL')
     r.attributes['val'] = adjust_tag_case(field.to_s, module_name)
-    r.add_text("#{value}")
+    r.add_text(value.to_s)
     row.elements << r
     row
   end
 
   def adjust_tag_case(tag, module_name)
     return tag if tag == 'id'
-    return tag.upcase if tag.downcase.rindex('id')
+    if tag.downcase.include?('id') && !@@module_translation_fields[module_name].try(:has_key?, tag)
+      return tag.upcase
+    end
     u_tags = %w[SEMODULE]
-    return tag.upcase if u_tags.index(tag.upcase)
+    return tag.upcase if u_tags.include?(tag.upcase)
 
     if @@module_translation_fields[module_name].blank?
       tag
@@ -75,7 +77,8 @@ module ZohoApiFieldUtils
   end
 
   def create_and_add_field_value_pair(field_name, module_name, n, record)
-    k = ApiUtils.string_to_symbol(field_name)
+    # k = ApiUtils.string_to_symbol(field_name)
+    k = ZohoFieldMapping.escape_name(field_name)
     v = n.text == 'null' ? nil : n.text
     r = record.merge({ k => v })
     r = r.merge({ :id => v }) if primary_key?(module_name, k)

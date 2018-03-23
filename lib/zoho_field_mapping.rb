@@ -19,6 +19,7 @@ class ZohoFieldMapping
     result
   end
 
+=begin
   def initialize
     @module_fields_map = load || {}
   end
@@ -42,24 +43,14 @@ class ZohoFieldMapping
       File.open(cache_file_path, 'w'){|f| f.write(@module_fields_map.to_yaml) }
     end
   end
-
-  def add(mod_name, *field_names)
-    puts "adding #{field_names.count} fiels to #{mod_name}"
-    # strasse => straße
-    @module_fields_map ||= {}
-    @module_fields_map[mod_name] ||= {}
-    field_names.each do |key|
-      method_name = self.class.escape_name(key)
-      @module_fields_map[mod_name][method_name.to_sym] = key.to_sym
-    end
-    save
-  end
+=end
 
   def map(module_name)
-    mod_name = module_name.underscore.to_sym
-    map = @module_fields_map[mod_name]
+    # mod_name = module_name.underscore.to_sym
+    # map = @module_fields_map[mod_name]
+    map = ZohoApi::Crm.class_variable_get('@@module_translation_fields')[module_name]
     if map.nil?
-      raise "failed to find map for #{mod_name.inspect}"
+      raise "failed to find map for #{module_name.inspect}"
     end
     map
   end
@@ -91,10 +82,10 @@ class ZohoFieldMapping
         object_attribute_hash.has_key?(:rechnungsadresse_empfaenger)
     object_attribute_hash.inject({}) do |memo, (key, value)|
       new_key = map[key.to_sym]
-      if voodoo
-        new_key = ApiUtils.symbol_to_string(new_key)
-      end
       if new_key.nil?
+        if voodoo
+          new_key = ApiUtils.symbol_to_string(key)
+        end
         # msg = "failed to find #{key} in #{debug_map(map).inspect}"
         # $stderr.write("#{msg}\n")
         # raise msg

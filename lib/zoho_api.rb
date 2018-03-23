@@ -201,7 +201,6 @@ module ZohoApi
       x = REXML::Document.new
       contacts = x.add_element module_name
       row = contacts.add_element 'row', {'no' => '1'}
-      fields_values_hash = ::ZohoFieldMapping.instance.translate_method_to_field_names(module_name, fields_values_hash)
       fields_values_hash.each_pair { |k, v| add_field(row, k, v, module_name) }
       r = self.class.post(create_url(module_name, 'updateRecords'),
                           :query => {:newFormat => 1, :authtoken => @auth_token,
